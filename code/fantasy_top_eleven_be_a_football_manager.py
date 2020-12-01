@@ -85,7 +85,7 @@ class Manager:
         # type: (str, Club) -> None
         self.manager_id: str = str(uuid.uuid1())  # Generating random manager ID
         self.name: str = name
-        self.club: Club = club
+        self.club: Club or None = club
 
     def clone(self):
         # type: () -> Manager
@@ -104,6 +104,7 @@ class Club:
         # type: (str, Stadium) -> None
         self.club_id: str = str(uuid.uuid1())  # Generating random club ID
         self.name: str = name
+        self.manager: Manager or None = None
         self.level: int = 1
         self.__player_list: list = []  # initial value
         self.club_academy: ClubAcademy = ClubAcademy()
@@ -111,6 +112,22 @@ class Club:
         self.home_stadium: Stadium = stadium
         self.budget: mpf = mpf("1e6")
         self.home_dollar_ticket_price: mpf = mpf("1.5")
+
+    def add_manager(self, manager):
+        # type: (Manager) -> bool
+        if self.manager is None:
+            self.manager = manager
+            manager.club = self
+            return True
+        return False
+
+    def remove_manager(self):
+        # type: () -> bool
+        if isinstance(self.manager, Manager):
+            self.manager.club = None
+            self.manager = None
+            return True
+        return False
 
     def get_skill_level(self):
         # type: () -> mpf
@@ -402,6 +419,7 @@ class League(Competition):
         # type: (str, int, int, str) -> None
         Competition.__init__(self, name, level, number_of_participants)
         self.country: str = country
+        self.league_table: LeagueTable = LeagueTable()
 
 
 class LeagueCup(Competition):
@@ -419,6 +437,15 @@ class ChampionsLeague(Competition):
     """
     This class contains attributes of the Champions League in this game.
     """
+
+    def __init__(self, name, level, number_of_participants, groups):
+        # type: (str, int, int, list) -> None
+        Competition.__init__(self, name, level, number_of_participants)
+        self.__groups: list = groups
+
+    def get_groups(self):
+        # type: () -> list
+        return self.__groups
 
 
 class LeagueTable:
@@ -444,12 +471,48 @@ class FootballMatch:
         :return: home score
         """
 
+        home_skill_level: mpf = self.home_team.get_skill_level()
+        away_skill_level: mpf = self.away_team.get_skill_level()
+        home_score: int = 0  # initial value
+        if home_skill_level > away_skill_level:
+            z: float = random.random()
+            while z > 0:
+                z += ((1 + HOME_COEFFICIENT) ** (ln(home_skill_level) - ln(away_skill_level))) - \
+                     home_score
+                home_score += 1
+        else:
+            z: float = random.random()
+            while z > 0:
+                z += ((1 + HOME_COEFFICIENT) ** (ln(away_skill_level) - ln(home_skill_level))) - \
+                     home_score
+                home_score += 1
+
+        return home_score
+
     def away_score(self):
         # type: () -> int
         """
         Generating the away score in the match.
         :return: away score
         """
+
+        home_skill_level: mpf = self.home_team.get_skill_level()
+        away_skill_level: mpf = self.away_team.get_skill_level()
+        away_score: int = 0  # initial value
+        if away_skill_level > home_skill_level:
+            z: float = random.random()
+            while z > 0:
+                z += ((1 + AWAY_COEFFICIENT) ** (ln(away_skill_level) - ln(home_skill_level))) - \
+                     away_score
+                away_score += 1
+        else:
+            z: float = random.random()
+            while z > 0:
+                z += ((1 + AWAY_COEFFICIENT) ** (ln(home_skill_level) - ln(away_skill_level))) - \
+                     away_score
+                away_score += 1
+
+        return away_score
 
     def clone(self):
         # type: () -> FootballMatch
