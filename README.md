@@ -13,3 +13,5 @@ how this game works will be easy if you have either played or heard of "Top Elev
 Python code used to create the game is available in 
 https://github.com/DtjiSoftwareDeveloper/Fantasy-Top-Eleven---Be-a-Football-Manager/blob/main/code/fantasy_top_eleven_be_a_football_manager.py. 
 It is currently under development.
+
+THIS FAILED PROJECT IS TERMINATED
